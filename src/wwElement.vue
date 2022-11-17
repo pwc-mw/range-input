@@ -166,7 +166,7 @@ $label-step-width: 5px;
 
 //DONT FORGET TO MAKE TEXT POSITION ABSOLUTE IN WEWEB!!!!!
 .wrapper {
-  // background-color: black;
+  background-color: black;
   display: flex;
   flex-direction: column;
   width: 100%;
