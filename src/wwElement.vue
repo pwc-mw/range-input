@@ -169,6 +169,7 @@ $label-step-width: 5px;
   // background-color: black;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 .labels {
   display: flex;
