@@ -171,6 +171,7 @@ $label-step-width: 5px;
   flex-direction: column;
   width: 100%;
 }
+
 .labels {
   display: flex;
   width: 100%;
