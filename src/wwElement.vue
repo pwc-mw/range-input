@@ -1,7 +1,7 @@
 <template>
   <!-- <wwElement v-bind="content.stepNumber" :ww-props="{ text: '1' }" /> -->
   <div class="wrapper">
-    <div class="labels">
+    <!-- <div class="labels">
       <div
         class="labels-item"
         v-for="index in content.maxRange + 1"
@@ -15,14 +15,16 @@
         <div class="labels-item-step">1</div>
         <div class="labels-item-separator"></div>
       </div>
-    </div>
+    </div> -->
+
     <input
       ref="myrangeinput"
       class="range-input"
       type="range"
       min="0"
+      :style="cssVars"
       :max="content.maxRange"
-      v-model="value"
+      v-model="intermediateValue"
       :required="content.required"
       id="range-slider-input"
     />
@@ -30,8 +32,7 @@
 </template>
 
 <script>
-const sliderCol1 = "#444444";
-const sliderCol2 = "#F2F2F2";
+import { ref } from "vue";
 export default {
   props: {
     content: { type: Object, required: true },
@@ -51,9 +52,52 @@ export default {
           props.content.value === undefined ? "" : props.content.value,
       });
     // what is formatValue?
-    return { variableValue, setValue };
+    const intermediateValue = ref(null);
+    return { variableValue, setValue, intermediateValue };
   },
   computed: {
+    gaugeColor() {
+      return this.content.gaugeColor;
+    },
+    thumbColor() {
+      return this.content.thumbColor;
+    },
+
+    trackColor() {
+      return this.content.trackColor;
+    },
+    sliderHeight() {
+      return this.content.sliderHeight;
+    },
+    thumbWidth() {
+      return this.content.thumbWidth;
+    },
+    thumbHeight() {
+      return this.content.thumbHeight;
+    },
+    thumbBorderRadius() {
+      return this.content.thumbBorderRadius;
+    },
+    rangeInputMargin() {
+      return (this.thumbHeight - this.sliderHeight) / 2;
+    },
+    thumbMarginTop() {
+      return ((this.thumbHeight - this.sliderHeight) / 2) * -1;
+    },
+    cssVars() {
+      console.log("borderRadius", this.thumbBorderRadius);
+      return {
+        "--gauge-color": this.gaugeColor,
+        "--track-color": this.trackColor,
+        "--thumb-color": this.thumbColor,
+        "--slider-height": this.sliderHeight + "px",
+        "--thumb-height": this.thumbHeight + "px",
+        "--thumb-width": this.thumbWidth + "px",
+        "--thumb-border-radius": this.thumbBorderRadius + "px",
+        "--range-input-margin": this.rangeInputMargin + "px",
+        "--thumb-margin-top": this.thumbMarginTop + "px",
+      };
+    },
     isEditing() {
       /* wwEditor:start */
       return (
@@ -71,19 +115,35 @@ export default {
         this.setValue(newValue);
       },
     },
+    maxRange() {
+      return this.content.maxRange;
+    },
+    realRange() {
+      return this.content.realRange;
+    },
   },
-  mounted() {
-    this.updateSliderColor(-1);
-    this.$refs.myrangeinput.addEventListener("input", function () {
-      let value = ((this.value - this.min) / (this.max - this.min)) * 100;
 
-      this.style.background = `linear-gradient(to right, ${sliderCol1} 0%, ${sliderCol1} ${value}%, ${sliderCol2}  ${value}%, ${sliderCol2} 100%)`;
-    });
+  mounted() {
+    // this.updateSliderColor(-1);
+    // this.$refs.myrangeinput.addEventListener("input", function () {
+    //   let value = ((this.value - this.min) / (this.max - this.min)) * 100;
+    //   this.style.background = `linear-gradient(to right, ${this.gaugeColor} 0%, ${this.gaugeColor} ${value}%, ${this.trackColor}  ${value}%, ${this.trackColor} 100%)`;
+    // });
   },
+
   watch: {
-    "content.value"(newValue) {
+    intermediateValue(newValue) {
       this.updateSliderColor(newValue);
-      this.setValue(newValue);
+      this.setValue(Math.round((newValue / this.maxRange) * this.realRange));
+      this.$emit("trigger-event", {
+        name: "initValueChange",
+        event: { value: newValue },
+      });
+    },
+    "content.value"(newValue) {
+      this.intermediateValue = (newValue / this.realRange) * this.maxRange;
+      // this.updateSliderColor(newValue);
+      // this.setValue(newValue);
       this.$emit("trigger-event", {
         name: "initValueChange",
         event: { value: newValue },
@@ -93,9 +153,18 @@ export default {
       this.updateSliderColor(-1);
       //it's not very
     },
+    "content.gaugeColor"() {
+      this.updateSliderColor(-1);
+    },
+    "content.trackColor"() {
+      this.updateSliderColor(-1);
+    },
+    "content.sliderHeight"() {},
+    "content.thumbDimensions"() {},
   },
   methods: {
     updateSliderColor(newValue) {
+      console.log("sliderColor fired");
       const inputRef = this.$refs.myrangeinput;
       const min = inputRef.min;
       const max = inputRef.max;
@@ -108,7 +177,7 @@ export default {
       } else {
         value = ((newValue - min) / (max - min)) * 100;
       }
-      inputRef.style.background = `linear-gradient(to right, ${sliderCol1} 0%, ${sliderCol1} ${value}%, ${sliderCol2}  ${value}%, ${sliderCol2} 100%)`;
+      inputRef.style.background = `linear-gradient(to right, ${this.gaugeColor} 0%, ${this.gaugeColor} ${value}%, ${this.trackColor}  ${value}%, ${this.trackColor} 100%)`;
     },
   },
 };
@@ -121,14 +190,13 @@ export default {
 <style lang="scss" scoped>
 $slider-height: 4px;
 $thumb-dimensions: 20px; //14px
-$col1: #444444;
-$col2: #f2f2f2; //f2f2f2
 $label-step-width: 5px;
 
-//styling
+//----------------------------------------styling
 .range-input {
+  transition: all 3s ease-in-out;
   padding: 0;
-  margin: calc(#{$thumb-dimensions - $slider-height}/ 2) 0;
+  margin: var(--range-input-margin) 0;
 
   -webkit-appearance: none;
   appearance: none;
@@ -137,22 +205,23 @@ $label-step-width: 5px;
   // height: $thumb-dimensions;
   width: 100%;
   outline: none;
-  height: $slider-height;
+  height: var(--slider-height);
   background: linear-gradient(
     to right,
-    $col1 0%,
-    $col1 50%,
-    $col2 50%,
-    $col2 100%
+    var(--gauge-color) 0%,
+    var(--gauge-color) 50%,
+    var(--track-color) 50%,
+    var(--track-color) 100%
   );
+
   &::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    height: $thumb-dimensions;
-    width: $thumb-dimensions;
-    border-radius: 50%;
-    background: #434343;
-    margin-top: calc((((#{$thumb-dimensions - $slider-height}) / 2) * -1));
+    height: var(--thumb-height);
+    width: var(--thumb-width);
+    border-radius: var(--thumb-border-radius);
+    background: var(--thumb-color);
+    margin-top: var(--thumb-margin-top);
     box-sizing: content-box;
     cursor: ew-resize;
   }
@@ -160,7 +229,7 @@ $label-step-width: 5px;
   &::-webkit-slider-runnable-track {
     // background: rgb(164, 95, 95);
     border-radius: 100px;
-    height: $slider-height;
+    height: var(--slider-height);
   }
 }
 
@@ -171,37 +240,37 @@ $label-step-width: 5px;
   width: 100%;
 }
 
-.labels {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  // background-color: blue;
-  padding: 0 calc(#{$thumb-dimensions - $label-step-width} / 2);
+// .labels {
+//   display: flex;
+//   width: 100%;
+//   justify-content: space-between;
+//   // background-color: blue;
+//   padding: 0 calc(#{$thumb-dimensions - $label-step-width} / 2);
 
-  //padding related to the
-  &-item {
-    // background-color: red;
-    display: flex;
-    min-width: $label-step-width;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    &-step {
-      left: -10;
-    }
-    &-step {
-      color: transparent;
-      font-size: 14px;
-    }
-    &-separator {
-      width: 2px;
-      height: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      border-radius: 100px;
+//   //padding related to the
+//   &-item {
+//     // background-color: red;
+//     display: flex;
+//     min-width: $label-step-width;
+//     flex-direction: column;
+//     align-items: center;
+//     position: relative;
+//     &-step {
+//       left: -10;
+//     }
+//     &-step {
+//       color: transparent;
+//       font-size: 14px;
+//     }
+//     &-separator {
+//       width: 2px;
+//       height: 10px;
+//       margin-top: 8px;
+//       margin-bottom: 8px;
+//       border-radius: 100px;
 
-      background-color: #e4e4e4;
-    }
-  }
-}
+//       background-color: #e4e4e4;
+//     }
+//   }
+// }
 </style>
