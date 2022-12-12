@@ -113,6 +113,10 @@ export default {
       },
       set(newValue) {
         this.setValue(newValue);
+        this.$emit("trigger-event", {
+          name: "change",
+          event: { value: newValue },
+        });
       },
     },
     maxRange() {
@@ -139,7 +143,7 @@ export default {
   watch: {
     intermediateValue(newValue) {
       this.updateSliderColor(newValue);
-      this.setValue(Math.round((newValue / this.maxRange) * this.realRange));
+      this.value = Math.round((newValue / this.maxRange) * this.realRange);
       // this.$emit("trigger-event", {
       //   name: "initValueChange",
       //   event: { value: newValue },

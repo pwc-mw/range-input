@@ -4,6 +4,14 @@ export default {
       en: "Custom range input",
     },
   },
+  triggerEvents: [
+    {
+      name: "change",
+      label: { en: "onChange" },
+      event: { value: "" },
+      default: true,
+    },
+  ],
   properties: {
     value: {
       label: {
