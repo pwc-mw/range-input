@@ -151,12 +151,9 @@ export default {
     },
     "content.value"(newValue) {
       this.intermediateValue = (newValue / this.realRange) * this.maxRange;
+      this.value = newValue;
       // this.updateSliderColor(newValue);
       // this.setValue(newValue);
-      this.$emit("trigger-event", {
-        name: "initValueChange",
-        event: { value: (newValue / this.realRange) * this.maxRange },
-      });
     },
     "content.maxRange"() {
       this.updateSliderColor(-1);
