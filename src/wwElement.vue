@@ -124,21 +124,26 @@ export default {
   },
 
   mounted() {
-    // this.updateSliderColor(-1);
-    // this.$refs.myrangeinput.addEventListener("input", function () {
-    //   let value = ((this.value - this.min) / (this.max - this.min)) * 100;
-    //   this.style.background = `linear-gradient(to right, ${this.gaugeColor} 0%, ${this.gaugeColor} ${value}%, ${this.trackColor}  ${value}%, ${this.trackColor} 100%)`;
-    // });
+    this.updateSliderColor(-1);
+    this.intermediateValue = (this.value / this.realRange) * this.maxRange;
+    this.$refs.myrangeinput.addEventListener("input", function () {
+      let value =
+        (((this.value / this.realRange) * this.maxRange - this.min) /
+          (this.max - this.min)) *
+        100;
+      this.style.background = `linear-gradient(to right, ${this.gaugeColor} 0%, ${this.gaugeColor} ${value}%, ${this.trackColor}  ${value}%, ${this.trackColor} 100%)`;
+    });
+    //correct this the this.min must be related to the input event. so it's related to the smoothness
   },
 
   watch: {
     intermediateValue(newValue) {
       this.updateSliderColor(newValue);
       this.setValue(Math.round((newValue / this.maxRange) * this.realRange));
-      this.$emit("trigger-event", {
-        name: "initValueChange",
-        event: { value: newValue },
-      });
+      // this.$emit("trigger-event", {
+      //   name: "initValueChange",
+      //   event: { value: newValue },
+      // });
     },
     "content.value"(newValue) {
       this.intermediateValue = (newValue / this.realRange) * this.maxRange;
@@ -146,7 +151,7 @@ export default {
       // this.setValue(newValue);
       this.$emit("trigger-event", {
         name: "initValueChange",
-        event: { value: newValue },
+        event: { value: (newValue / this.realRange) * this.maxRange },
       });
     },
     "content.maxRange"() {
