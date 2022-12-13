@@ -11,19 +11,33 @@ export default {
       event: { value: "" },
       default: true,
     },
+    {
+      name: "initValueChange",
+      label: { en: "On init value change" },
+      event: { value: "" },
+    },
   ],
   properties: {
     value: {
       label: {
-        en: "Initial value",
+        en: "Init value",
       },
       type: "Text",
+      section: "settings",
       bindable: true,
       defaultValue: 0,
-      section: "settings",
+      /* wwEditor:start */
       bindingValidation: {
-        validations: [{ type: "string" }, { type: "number" }],
-        tooltip: "a string that defines the initial value",
+        validations: [
+          {
+            type: "string",
+          },
+          {
+            type: "number",
+          },
+        ],
+        tooltip:
+          'A string or a number depending on the type of input chosen: `42`, `"My message"`',
       },
     },
     sliderHeight: {
@@ -94,16 +108,9 @@ export default {
       },
     },
     maxRange: {
-      label: { en: "smoothness" },
+      label: { en: "steps" },
       type: "Number",
       defaultValue: 100,
-      bindable: true,
-      section: "settings",
-    },
-    realRange: {
-      label: { en: "real Range" },
-      type: "Number",
-      defaultValue: 10,
       bindable: true,
       section: "settings",
     },

@@ -24,7 +24,7 @@
       min="0"
       :style="cssVars"
       :max="content.maxRange"
-      v-model="intermediateValue"
+      v-model="value"
       :required="content.required"
       id="range-slider-input"
     />
@@ -52,8 +52,9 @@ export default {
           props.content.value === undefined ? "" : props.content.value,
       });
     // what is formatValue?
-    const intermediateValue = ref(null);
-    return { variableValue, setValue, intermediateValue };
+    //const intermediateValue = ref(null);
+
+    return { variableValue, setValue };
   },
   computed: {
     gaugeColor() {
@@ -62,7 +63,6 @@ export default {
     thumbColor() {
       return this.content.thumbColor;
     },
-
     trackColor() {
       return this.content.trackColor;
     },
@@ -126,34 +126,21 @@ export default {
       return this.content.realRange;
     },
   },
-
   mounted() {
     this.updateSliderColor(-1);
-    this.intermediateValue = (this.value / this.realRange) * this.maxRange;
     this.$refs.myrangeinput.addEventListener("input", function () {
-      let value =
-        (((this.value / this.realRange) * this.maxRange - this.min) /
-          (this.max - this.min)) *
-        100;
+      let value = (this.value - this.min / this.max - this.min) * 100;
       this.style.background = `linear-gradient(to right, ${this.gaugeColor} 0%, ${this.gaugeColor} ${value}%, ${this.trackColor}  ${value}%, ${this.trackColor} 100%)`;
     });
     //correct this the this.min must be related to the input event. so it's related to the smoothness
   },
-
   watch: {
-    intermediateValue(newValue) {
-      this.updateSliderColor(newValue);
-      this.value = Math.round((newValue / this.maxRange) * this.realRange);
-      // this.$emit("trigger-event", {
-      //   name: "initValueChange",
-      //   event: { value: newValue },
-      // });
-    },
     "content.value"(newValue) {
-      this.intermediateValue = (newValue / this.realRange) * this.maxRange;
       this.value = newValue;
-      // this.updateSliderColor(newValue);
-      // this.setValue(newValue);
+      this.updateSliderColor(newValue);
+    },
+    value(newValue) {
+      this.updateSliderColor(newValue);
     },
     "content.maxRange"() {
       this.updateSliderColor(-1);
@@ -197,13 +184,11 @@ export default {
 $slider-height: 4px;
 $thumb-dimensions: 20px; //14px
 $label-step-width: 5px;
-
 //----------------------------------------styling
 .range-input {
   transition: all 3s ease-in-out;
   padding: 0;
   margin: var(--range-input-margin) 0;
-
   -webkit-appearance: none;
   appearance: none;
   border-radius: 100px;
@@ -219,7 +204,6 @@ $label-step-width: 5px;
     var(--track-color) 50%,
     var(--track-color) 100%
   );
-
   &::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -231,52 +215,16 @@ $label-step-width: 5px;
     box-sizing: content-box;
     cursor: ew-resize;
   }
-
   &::-webkit-slider-runnable-track {
     // background: rgb(164, 95, 95);
     border-radius: 100px;
     height: var(--slider-height);
   }
 }
-
 //DONT FORGET TO MAKE TEXT POSITION ABSOLUTE IN WEWEB!!!!!
 .wrapper {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
-
-// .labels {
-//   display: flex;
-//   width: 100%;
-//   justify-content: space-between;
-//   // background-color: blue;
-//   padding: 0 calc(#{$thumb-dimensions - $label-step-width} / 2);
-
-//   //padding related to the
-//   &-item {
-//     // background-color: red;
-//     display: flex;
-//     min-width: $label-step-width;
-//     flex-direction: column;
-//     align-items: center;
-//     position: relative;
-//     &-step {
-//       left: -10;
-//     }
-//     &-step {
-//       color: transparent;
-//       font-size: 14px;
-//     }
-//     &-separator {
-//       width: 2px;
-//       height: 10px;
-//       margin-top: 8px;
-//       margin-bottom: 8px;
-//       border-radius: 100px;
-
-//       background-color: #e4e4e4;
-//     }
-//   }
-// }
 </style>
