@@ -24,7 +24,7 @@
       min="0"
       :style="cssVars"
       :max="content.maxRange"
-      v-model="value"
+      :value="value"
       :required="content.required"
       id="range-slider-input"
     />
